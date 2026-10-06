@@ -1,5 +1,51 @@
 # miniflare
 
+## 5.20261005.0-alpha
+
+### Minor Changes
+
+- [#15998](https://github.com/cloudflare/workers-sdk/pull/15998) [`b75421f`](https://github.com/cloudflare/workers-sdk/commit/b75421fcd5b2d8208cefb38882479773a7387df4) Thanks [@dario-piotrowicz](https://github.com/dario-piotrowicz)! - Add `assets.base_path` support to Workers Assets
+
+  Serve an asset directory from a public URL prefix without changing its on-disk layout:
+
+  ```jsonc
+  {
+    "assets": {
+      "directory": "./public",
+      "base_path": "/docs"
+    }
+  }
+  ```
+
+  Wrangler, preview, Miniflare, and generated build configuration preserve the explicitly selected value, while the Asset Worker normalizes it and strips the prefix only for asset lookup. Requests passed to a user Worker, request-facing headers, and redirects retain the public path. Relative pathname inputs are interpreted as root-relative prefixes, URL-shaped values are rejected, and omitting the option preserves existing root-path behavior.
+
+  Authored `_headers` and `_redirects` rules continue to match full public paths. In particular, both the source and destination of an authored `200` asset rewrite must include the configured public prefix; Asset Worker-generated redirects are prefixed automatically.
+
+- [#15330](https://github.com/cloudflare/workers-sdk/pull/15330) [`f8cdcb9`](https://github.com/cloudflare/workers-sdk/commit/f8cdcb920fc44daf7bf4ef9cb1dce751313ac2bd) Thanks [@akshitsinha](https://github.com/akshitsinha)! - Manage local Flagship flags in Local Explorer
+
+  Bound Flagship apps now appear in Local Explorer. You can create, edit, toggle, delete, and evaluate flags against the same local store used by your Worker, including targeting conditions and percentage rollouts.
+
+  Explorer requests are routed to the development process that owns each app, so Flagship management also works across multiple local Workers.
+
+### Patch Changes
+
+- [#16014](https://github.com/cloudflare/workers-sdk/pull/16014) [`c492d63`](https://github.com/cloudflare/workers-sdk/commit/c492d6312152cedbf93f0b5bbcadcab5e01af9e7) Thanks [@dependabot](https://github.com/apps/dependabot)! - Update dependencies of "miniflare", "wrangler"
+
+  The following dependency versions have been updated:
+
+  | Dependency                | From          | To            |
+  | ------------------------- | ------------- | ------------- |
+  | @cloudflare/workers-types | ^5.20261001.1 | ^5.20261005.1 |
+  | workerd                   | 1.20261001.1  | 1.20261005.1  |
+
+- [#15781](https://github.com/cloudflare/workers-sdk/pull/15781) [`48f3c04`](https://github.com/cloudflare/workers-sdk/commit/48f3c04dceccb3fac88798918f8890e094173a18) Thanks [@Wichtowski](https://github.com/Wichtowski)! - Reduce `dispatchFetch()` connection exhaustion under sustained local and CI workloads
+
+  Repeated dispatches now reuse runtime connections for all HTTP methods, including `POST`, `PUT`, `DELETE`, and `PATCH`, instead of creating a new connection for every request. This prevents read-heavy and write-heavy Miniflare test suites from exhausting the host's available ephemeral ports. Transport failures are surfaced without automatically replaying requests, since Worker handlers can have side effects even for `GET` and `HEAD`. Idle runtime connections now close after one second, before workerd's five-second idle timeout can race with reuse.
+
+- [#16063](https://github.com/cloudflare/workers-sdk/pull/16063) [`0b51fec`](https://github.com/cloudflare/workers-sdk/commit/0b51fec333589b3c039596f981907951617132bb) Thanks [@Cherry](https://github.com/Cherry)! - Start the synchronous proxy worker before returning proxies
+
+  `getBindings()`, `getDurableObjectNamespace()` and the other proxy getters now wait for the worker that serves synchronous proxy calls to start, instead of the first synchronous call blocking Node's main thread while it boots. That block also stalled every other Miniflare instance served from the same process, such as Vitest pool workers running test files in parallel.
+
 ## 5.20261001.0-alpha
 
 ### Minor Changes
